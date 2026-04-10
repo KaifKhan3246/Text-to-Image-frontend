@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 
 const BuyCredit = () => {
 
-  const { backendUrl, loadCreditsData, user, token, setShowLogin } = useContext(AppContext)
+  const { backendUrl, loadCreditsData, user, token } = useContext(AppContext)
 
   const navigate = useNavigate()
 
@@ -27,7 +27,7 @@ const BuyCredit = () => {
 
         try {
 
-          const { data } = await axios.post(backendUrl + '/api/user/verify-razor', response, { headers: { token } })
+          const { data } = await axios.post(backendUrl + '/api/user/verify-razor', response)
           if (data.success) {
             loadCreditsData()
             navigate('/')
@@ -49,10 +49,11 @@ const BuyCredit = () => {
     try {
 
       if (!user) {
-        setShowLogin(true)
+        navigate('/login')
+        return
       }
 
-      const { data } = await axios.post(backendUrl + '/api/user/pay-razor', { planId }, { headers: { token } })
+      const { data } = await axios.post(backendUrl + '/api/user/pay-razor', { planId })
       if (data.success) {
         initPay(data.order)
       }
@@ -64,7 +65,12 @@ const BuyCredit = () => {
   const paymentStripe = async (planId) => {
     try {
 
-      const { data } = await axios.post(backendUrl + '/api/user/pay-stripe', { planId }, { headers: { token } })
+      if (!user) {
+        navigate('/login')
+        return
+      }
+
+      const { data } = await axios.post(backendUrl + '/api/user/pay-stripe', { planId })
       if (data.success) {
         const { session_url } = data
         window.location.replace(session_url)

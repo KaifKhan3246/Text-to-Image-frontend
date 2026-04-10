@@ -66,8 +66,9 @@ const AppContextProvider = (props) => {
     useEffect(() => {
         const requestInterceptor = axios.interceptors.request.use(
             (config) => {
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`
+                const localToken = localStorage.getItem('token');
+                if (localToken) {
+                    config.headers.Authorization = `Bearer ${localToken}`
                 }
                 return config
             },
