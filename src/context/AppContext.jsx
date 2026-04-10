@@ -18,8 +18,8 @@ const AppContextProvider = (props) => {
 
     const loadCreditsData = async () => {
         try {
-
-            const { data } = await axios.get(backendUrl + '/api/user/credits', { headers: { token } })
+            const currentToken = localStorage.getItem('token');
+            const { data } = await axios.get(backendUrl + '/api/user/credits', { headers: { token: currentToken } })
             if (data.success) {
                 setCredit(data.credits)
                 setUser(data.user)
@@ -27,18 +27,14 @@ const AppContextProvider = (props) => {
 
         } catch (error) {
             console.log(error)
-            if (error.response && error.response.status === 401) {
-                logout()
-            } else {
-                toast.error(error.message)
-            }
+            toast.error("Failed to load credits: " + error.message)
         }
     }
 
     const generateImage = async (prompt) => {
         try {
-
-            const { data } = await axios.post(backendUrl + '/api/image/generate-image', { prompt }, { headers: { token } })
+            const currentToken = localStorage.getItem('token');
+            const { data } = await axios.post(backendUrl + '/api/image/generate-image', { prompt }, { headers: { token: currentToken } })
 
             if (data.success) {
                 loadCreditsData()
@@ -52,11 +48,7 @@ const AppContextProvider = (props) => {
             }
 
         } catch (error) {
-            if (error.response && error.response.status === 401) {
-                logout()
-            } else {
-                toast.error(error.message)
-            }
+            toast.error(error.message)
         }
     }
 
