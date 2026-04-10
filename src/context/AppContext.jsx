@@ -27,7 +27,11 @@ const AppContextProvider = (props) => {
 
         } catch (error) {
             console.log(error)
-            toast.error(error.message)
+            if (error.response && error.response.status === 401) {
+                logout()
+            } else {
+                toast.error(error.message)
+            }
         }
     }
 
@@ -48,7 +52,11 @@ const AppContextProvider = (props) => {
             }
 
         } catch (error) {
-            toast.error(error.message)
+            if (error.response && error.response.status === 401) {
+                logout()
+            } else {
+                toast.error(error.message)
+            }
         }
     }
 
