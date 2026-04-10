@@ -10,13 +10,18 @@ const Result = () => {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
   const [image, setImage] = useState(assets.sample_img_1)
 
-  const { generateImage } = useContext(AppContext)
+  const { generateImage, user, setShowLogin } = useContext(AppContext)
 
   const onSubmitHandler = async (e) => {
     e.preventDefault()
     setLoading(true)
 
     if (input) {
+      if (!user) {
+        setShowLogin(true);
+        setLoading(false);
+        return;
+      }
       const image = await generateImage(input)
       if (image) {
         setIsImageLoaded(true)
