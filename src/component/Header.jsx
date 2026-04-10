@@ -6,14 +6,14 @@ import {useNavigate} from 'react-router-dom'
 
 const Header = () => {
 
-    const { user, setshowlogin } = useContext(AppContext)
+    const { user } = useContext(AppContext)
     const navigate = useNavigate()
 
     const onClickHandler = () => {
         if (user) {
             navigate('/result')
         } else {
-            setshowlogin(true)
+            navigate('/login')
         }
     }
 
