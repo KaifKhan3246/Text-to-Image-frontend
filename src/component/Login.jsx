@@ -1,10 +1,9 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
 
@@ -13,8 +12,7 @@ const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const { backendUrl, setToken, setUser } = useContext(AppContext)
-    const navigate = useNavigate()
+    const { backendUrl, setShowLogin, setToken, setUser } = useContext(AppContext)
 
     const onSubmitHandler = async (e) => {
         e.preventDefault()
@@ -29,7 +27,7 @@ const Login = () => {
                     setToken(data.token)
                     setUser(data.user)
                     localStorage.setItem('token', data.token)
-                    navigate('/')
+                    setShowLogin(false)
                 } else {
                     toast.error(data.message)
                 }
@@ -42,7 +40,7 @@ const Login = () => {
                     setToken(data.token)
                     setUser(data.user)
                     localStorage.setItem('token', data.token)
-                    navigate('/')
+                    setShowLogin(false)
                 } else {
                     toast.error(data.message)
                 }
@@ -58,8 +56,18 @@ const Login = () => {
 
 
 
+    useEffect(() => {
+        // Disable scrolling on body when the login is open
+        document.body.style.overflow = 'hidden';
+
+        // Cleanup function to re-enable scrolling
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
     return (
-        <div className='min-h-[80vh] flex justify-center items-center'>
+        <div className=' absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm bg-black/30 flex justify-center items-center'>
             <motion.form onSubmit={onSubmitHandler} className='relative bg-white p-10 rounded-xl text-slate-500'
                 initial={{ opacity: 0.2, y: 50 }}
                 transition={{ duration: 0.3 }}
@@ -94,6 +102,8 @@ const Login = () => {
                     ? <p className='mt-5 text-center'>Don't have an account? <span onClick={() => setState('Sign Up')} className='text-blue-600 cursor-pointer'>Sign up</span></p>
                     : <p className='mt-5 text-center'>Already have an account? <span onClick={() => setState('Login')} className='text-blue-600 cursor-pointer'>Login</span></p>
                 }
+
+                <img onClick={() => setShowLogin(false)} className=' absolute top-5 right-5 cursor-pointer' src={assets.cross_icon} alt="" />
             </motion.form>
         </div>
     )

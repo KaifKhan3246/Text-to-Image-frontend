@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ export const AppContext = createContext()
 
 const AppContextProvider = (props) => {
 
+    const [showLogin, setShowLogin] = useState(false)
     const [token, setToken] = useState(localStorage.getItem('token'))
     const [user, setUser] = useState(null)
 
@@ -18,7 +19,7 @@ const AppContextProvider = (props) => {
     const loadCreditsData = async () => {
         try {
 
-            const { data } = await axios.get(backendUrl + '/api/user/credits')
+            const { data } = await axios.get(backendUrl + '/api/user/credits', { headers: { token } })
             if (data.success) {
                 setCredit(data.credits)
                 setUser(data.user)
@@ -33,7 +34,7 @@ const AppContextProvider = (props) => {
     const generateImage = async (prompt) => {
         try {
 
-            const { data } = await axios.post(backendUrl + '/api/image/generate-image', { prompt })
+            const { data } = await axios.post(backendUrl + '/api/image/generate-image', { prompt }, { headers: { token } })
 
             if (data.success) {
                 loadCreditsData()
@@ -51,11 +52,11 @@ const AppContextProvider = (props) => {
         }
     }
 
-    const logout = useCallback(() => {
+    const logout = () => {
         localStorage.removeItem('token')
         setToken('')
         setUser(null)
-    }, [])
+    }
 
     useEffect(()=>{
         if (token) {
@@ -63,48 +64,10 @@ const AppContextProvider = (props) => {
         }
     },[token])
 
-    useEffect(() => {
-        const requestInterceptor = axios.interceptors.request.use(
-            (config) => {
-                const localToken = localStorage.getItem('token');
-                if (localToken) {
-                    config.headers.Authorization = `Bearer ${localToken}`
-                }
-                return config
-            },
-            (error) => Promise.reject(error)
-        )
-
-        const responseInterceptor = axios.interceptors.response.use(
-            (response) => {
-                if (response.data && response.data.success === false &&
-                    (response.data.message === 'Not Authorized. Login Again' || 
-                     response.data.message?.includes('Not Authorized') || 
-                     response.data.message?.includes('jwt') || 
-                     response.data.message?.includes('token'))) {
-                    logout()
-                    navigate('/login')
-                }
-                return response
-            },
-            (error) => {
-                if (error.response && error.response.status === 401) {
-                    logout()
-                    navigate('/login')
-                }
-                return Promise.reject(error)
-            }
-        )
-
-        return () => {
-            axios.interceptors.request.eject(requestInterceptor)
-            axios.interceptors.response.eject(responseInterceptor)
-        }
-    }, [token, logout, navigate])
-
     const value = {
         token, setToken,
         user, setUser,
+        showLogin, setShowLogin,
         credit, setCredit,
         loadCreditsData,
         backendUrl,
