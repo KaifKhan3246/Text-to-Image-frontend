@@ -16,10 +16,32 @@ const AppContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL
     const navigate = useNavigate()
 
+    // Create axios instance with default config for production
+    const apiClient = axios.create({
+        baseURL: backendUrl,
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    // Add interceptor to attach token to every request
+    apiClient.interceptors.request.use(
+        (config) => {
+            const currentToken = localStorage.getItem('token');
+            if (currentToken) {
+                config.headers.Authorization = `Bearer ${currentToken}`;
+            }
+            return config;
+        },
+        (error) => {
+            return Promise.reject(error);
+        }
+    );
+
     const loadCreditsData = async () => {
         try {
-            const currentToken = localStorage.getItem('token');
-            const { data } = await axios.get(backendUrl + '/api/user/credits', { headers: { token: currentToken } })
+            const { data } = await apiClient.get('/api/user/credits')
             if (data.success) {
                 setCredit(data.credits)
                 setUser(data.user)
@@ -33,8 +55,7 @@ const AppContextProvider = (props) => {
 
     const generateImage = async (prompt) => {
         try {
-            const currentToken = localStorage.getItem('token');
-            const { data } = await axios.post(backendUrl + '/api/image/generate-image', { prompt }, { headers: { token: currentToken } })
+            const { data } = await apiClient.post('/api/image/generate-image', { prompt })
 
             if (data.success) {
                 loadCreditsData()
@@ -72,7 +93,8 @@ const AppContextProvider = (props) => {
         loadCreditsData,
         backendUrl,
         generateImage,
-        logout
+        logout,
+        apiClient
     }
 
     return (
